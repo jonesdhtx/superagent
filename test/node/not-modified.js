@@ -1,3 +1,5 @@
+require('should');
+require('should-http');
 
 var request = require('../../')
   , express = require('express')
@@ -6,21 +8,28 @@ var request = require('../../')
 
 app.get('/', function(req, res){
   if (req.header('if-modified-since')) {
-    res.send(304);
+    res.status(304).end();
   } else {
-    res.send('' + Date.now())
+    res.send('' + Date.now());
   }
 });
 
-app.listen(3008);
+var base = 'http://localhost'
+var server;
+before(function listen(done) {
+  server = app.listen(0, function listening() {
+    base += ':' + server.address().port;
+    done();
+  });
+});
 
 describe('request', function(){
   describe('not modified', function(){
     var ts;
     it('should start with 200', function(done){
       request
-      .get('http://localhost:3008/')
-      .end(function(res){
+      .get(base)
+      .end(function(err, res){
         res.should.have.status(200)
         res.text.should.match(/^\d+$/);
         ts = +res.text;
@@ -30,9 +39,9 @@ describe('request', function(){
 
     it('should then be 304', function(done){
       request
-      .get('http://localhost:3008/')
+      .get(base)
       .set('If-Modified-Since', new Date(ts).toUTCString())
-      .end(function(res){
+      .end(function(err, res){
         res.should.have.status(304)
         // res.text.should.be.empty
         done();

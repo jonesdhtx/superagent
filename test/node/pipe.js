@@ -1,31 +1,59 @@
-
 var request = require('../../')
   , express = require('express')
   , app = express()
-  , fs = require('fs');
+  , fs = require('fs')
+  , bodyParser = require('body-parser');
 
-app.use(express.bodyParser());
+app.use(bodyParser.json());
+
+app.get('/', function(req, res){
+  fs.createReadStream('test/node/fixtures/user.json').pipe(res);
+});
 
 app.post('/', function(req, res){
   res.send(req.body);
 });
 
-app.listen(3020);
+var base = 'http://localhost'
+var server;
+before(function listen(done) {
+  server = app.listen(0, function listening() {
+    base += ':' + server.address().port;
+    done();
+  });
+});
 
-describe('request', function(){
-  describe('act as a writable stream', function(){
-    it('should format the url', function(done){
-      var req = request.post('http://localhost:3020')
-        , stream = fs.createReadStream('test/node/fixtures/user.json');
+describe('request pipe', function(){
+  var destPath = 'test/node/fixtures/tmp.json';
 
-      req.type('json');
+  after(function removeTmpfile(done){
+    fs.unlink(destPath, done);
+  });
 
-      req.on('response', function(res){
-        res.body.should.eql({ name: 'tobi' });
-        done();
-      });
+  it('should act as a writable stream', function(done){
+    var req = request.post(base);
+    var stream = fs.createReadStream('test/node/fixtures/user.json');
 
-      stream.pipe(req);
-    })
+    req.type('json');
+
+    req.on('response', function(res){
+      res.body.should.eql({ name: 'tobi' });
+      done();
+    });
+
+    stream.pipe(req);
   })
-})
+
+  it('should act as a readable stream', function(done){
+    var stream = fs.createWriteStream(destPath);
+
+    var req = request.get(base);
+    req.type('json');
+
+    stream.on('finish', function(){
+      JSON.parse(fs.readFileSync(destPath, 'utf8')).should.eql({ name: 'tobi' });
+      done();
+    });
+    req.pipe(stream);
+  })
+});

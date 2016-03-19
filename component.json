@@ -1,8 +1,8 @@
 {
   "name": "superagent",
   "repo": "visionmedia/superagent",
-  "description": "awesome http requests",
-  "version": "0.14.2",
+  "version": "1.9.0",
+  "description": "elegant & feature rich browser / node HTTP with a fluent API",
   "keywords": [
     "http",
     "ajax",
@@ -15,7 +15,7 @@
   "main": "lib/client.js",
   "dependencies": {
     "component/emitter": "*",
-    "RedVentures/reduce": "*"
+    "component/reduce": "*"
   },
   "license": "MIT"
 }

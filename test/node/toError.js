@@ -6,19 +6,29 @@ var request = require('../..')
   , url = require('url');
 
 app.get('/', function(req, res){
-  res.send(400, 'invalid json');
+  res.status(400).send('invalid json');
 });
 
-app.listen(8888);
+var base = 'http://localhost'
+var server;
+before(function listen(done) {
+  server = app.listen(0, function listening() {
+    base += ':' + server.address().port;
+    done();
+  });
+});
 
 describe('res.toError()', function(){
   it('should return an Error', function(done){
     request
-    .get('http://localhost:8888/')
-    .end(function(res){
+    .get(base)
+    .end(function(err, res){
       var err = res.toError();
       assert(err.status == 400);
-      assert(err.message == 'got 400 response');
+      assert(err.method == 'GET');
+      assert(err.path == '/');
+      assert(err.message == 'cannot GET / (400)');
+      assert(err.text == 'invalid json');
       done();
     });
   })

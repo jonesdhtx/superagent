@@ -1,14 +1,5 @@
-
-var utils = require('../../lib/node/utils')
-  , assert = require('assert');
-
-describe('utils.uid(len)', function(){
-  it('should generate a unique id', function(){
-    utils.uid(10).should.have.length(10);
-    utils.uid(30).should.have.length(30);
-    utils.uid(30).should.not.equal(utils.uid(30));
-  })
-})
+var assert = require('assert');
+var utils = require('../../lib/node/utils');
 
 describe('utils.type(str)', function(){
   it('should return the mime type', function(){
